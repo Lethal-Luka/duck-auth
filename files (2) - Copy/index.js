@@ -13,11 +13,11 @@ fastify.register(require('@fastify/cors'), {
   origin: true
 });
 
-// Database connection (temporarily disabled for frontend development)
+// Database connection
 const connectDB = async () => {
   try {
-    // await mongoose.connect('mongodb+srv://me:xfENsq2KGppiG7lk@duck-auth.9dbrtqf.mongodb.net/?retryWrites=true&w=majority&appName=Duck-Auth');
-    console.log('MongoDB connection skipped for frontend development');
+    await mongoose.connect('mongodb+srv://me:xfENsq2KGppiG7lk@duck-auth.9dbrtqf.mongodb.net/?retryWrites=true&w=majority&appName=Duck-Auth');
+    console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);

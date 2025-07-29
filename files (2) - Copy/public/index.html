@@ -695,10 +695,10 @@
             }
         });
 
-        // Check if user is already logged in (temporarily disabled for UI development)
-        // if (localStorage.getItem('token')) {
-        //     window.location.href = '/dashboard';
-        // }
+        // Check if user is already logged in
+        if (localStorage.getItem('token')) {
+            window.location.href = '/dashboard';
+        }
     </script>
 </body>
 </html>

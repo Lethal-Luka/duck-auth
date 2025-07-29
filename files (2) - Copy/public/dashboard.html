@@ -1283,22 +1283,12 @@
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
             
-            // Temporarily disable auth check for UI development
-            if (false && (!token || !user)) {
+            if (!token || !user) {
                 window.location.href = '/';
                 return;
             }
             
-            // Set mock user for UI development
-            if (!user) {
-                currentUser = {
-                    username: 'DemoUser',
-                    email: 'demo@duckauth.com',
-                    apiKey: 'da_demo_' + Math.random().toString(36).substr(2, 16)
-                };
-            } else {
-                currentUser = JSON.parse(user);
-            }
+            currentUser = JSON.parse(user);
             updateUserDisplay();
         }
 

@@ -19,8 +19,8 @@ const connectDB = async () => {
     await mongoose.connect('mongodb+srv://me:xfENsq2KGppiG7lk@duck-auth.9dbrtqf.mongodb.net/?retryWrites=true&w=majority&appName=Duck-Auth');
     console.log('MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.warn('MongoDB connection failed, continuing without database:', error.message);
+    // Don't exit - allow frontend-only testing
   }
 };
 
@@ -29,6 +29,7 @@ fastify.register(require('./routes/auth'), { prefix: '/api/auth' });
 fastify.register(require('./routes/projects'), { prefix: '/api/projects' });
 fastify.register(require('./routes/scripts'), { prefix: '/api/scripts' });
 fastify.register(require('./routes/users'), { prefix: '/api/users' });
+fastify.register(require('./routes/userKeys'), { prefix: '/api/userKeys' });
 fastify.register(require('./routes/dashboard'), { prefix: '/api/dashboard' });
 
 // Serve frontend

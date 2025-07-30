@@ -35,7 +35,22 @@ async function projectRoutes(fastify, options) {
         ]
       }).populate('owner', 'username email');
 
-      reply.send({ projects });
+      // Get script and user key counts for each project
+      const Script = require('../models/Script');
+      const UserKey = require('../models/UserKey');
+      
+      const projectsWithStats = await Promise.all(projects.map(async (project) => {
+        const scriptCount = await Script.countDocuments({ project: project._id });
+        const userKeyCount = await UserKey.countDocuments({ project: project._id });
+        
+        return {
+          ...project.toObject(),
+          scriptCount,
+          userKeyCount
+        };
+      }));
+
+      reply.send({ projects: projectsWithStats });
     } catch (error) {
       reply.status(500).send({ error: error.message });
     }

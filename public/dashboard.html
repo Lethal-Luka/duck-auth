@@ -1294,7 +1294,9 @@
                 }
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                document.getElementById('recentActivity').innerHTML = '<p style="color: var(--text-secondary);">Error loading activity</p>';
+                // Show mock data when API fails
+                showMockDashboardData();
+                showNotification('Using mock data for dashboard - API connection failed', 'info');
             }
         }
 
@@ -1322,8 +1324,8 @@
                         </div>
                         <p style="color: var(--text-secondary); margin-bottom: 10px;">${project.description || 'No description'}</p>
                         <div class="project-stats">
-                            <span><i class="fas fa-code"></i> 0 scripts</span>
-                            <span><i class="fas fa-key"></i> 0 keys</span>
+                            <span><i class="fas fa-code"></i> ${project.scriptCount || 0} scripts</span>
+                            <span><i class="fas fa-key"></i> ${project.userKeyCount || 0} keys</span>
                         </div>
                     </div>`
                 ).join('');
@@ -1331,8 +1333,9 @@
                 document.getElementById('projectsGrid').innerHTML = projectsHtml;
             } catch (error) {
                 console.error('Error loading projects:', error);
-                document.getElementById('projectsGrid').innerHTML = '<p style="color: var(--text-secondary);">Error loading projects</p>';
-                showNotification('Error loading projects', 'error');
+                // Show mock data when API fails
+                showMockProjects();
+                showNotification('Using mock data - API connection failed', 'info');
             }
         }
 
@@ -1405,63 +1408,59 @@
                 document.getElementById('projectScriptsContainer').innerHTML = scriptsHtml;
             } catch (error) {
                 console.error('Error loading project scripts:', error);
-                showNotification('Error loading scripts', 'error');
+                // Show mock data when API fails
+                showMockScripts();
+                showNotification('Using mock data for scripts - API connection failed', 'info');
             }
         }
 
         async function loadUserKeys() {
             if (!selectedProject) return;
 
-            // Mock user keys for now
-            currentUserKeys = [
-                {
-                    _id: '1',
-                    username: 'user123',
-                    key: `${selectedProject._id}_${Math.random().toString(36).substr(2, 16)}`,
-                    createdAt: new Date(),
-                    isActive: true
-                },
-                {
-                    _id: '2',
-                    username: 'player456',
-                    key: `${selectedProject._id}_${Math.random().toString(36).substr(2, 16)}`,
-                    createdAt: new Date(Date.now() - 86400000),
-                    isActive: true
-                }
-            ];
-
-            if (currentUserKeys.length === 0) {
-                document.getElementById('userKeysContainer').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-key"></i>
-                        <h3>No User Keys Yet</h3>
-                        <p>Add user keys to whitelist users for this project!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const keysHtml = currentUserKeys.map(userKey => 
-                `<div class="user-key-item">
-                    <div class="user-key-info">
-                        <div class="user-key-username">${userKey.username}</div>
-                        <div class="user-key-value">${userKey.key}</div>
-                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
-                            Created: ${userKey.createdAt.toLocaleDateString()}
+            try {
+                const data = await apiCall(`/api/userKeys/project/${selectedProject._id}`);
+                currentUserKeys = data.userKeys || [];
+                
+                if (currentUserKeys.length === 0) {
+                    document.getElementById('userKeysContainer').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-key"></i>
+                            <h3>No User Keys Yet</h3>
+                            <p>Add user keys to whitelist users for this project!</p>
                         </div>
-                    </div>
-                    <div class="script-actions">
-                        <button class="btn btn-secondary btn-small" onclick="copyText('${userKey.key}')">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                        <button class="btn btn-danger btn-small" onclick="removeUserKey('${userKey._id}')">
-                            <i class="fas fa-trash"></i> Remove
-                        </button>
-                    </div>
-                </div>`
-            ).join('');
+                    `;
+                    return;
+                }
 
-            document.getElementById('userKeysContainer').innerHTML = keysHtml;
+                const keysHtml = currentUserKeys.map(userKey => 
+                    `<div class="user-key-item">
+                        <div class="user-key-info">
+                            <div class="user-key-username">${userKey.username}</div>
+                            <div class="user-key-value">${userKey.key}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                                Created: ${new Date(userKey.createdAt).toLocaleDateString()}
+                                ${userKey.lastUsed ? ` | Last used: ${new Date(userKey.lastUsed).toLocaleDateString()}` : ''}
+                                ${userKey.usageCount ? ` | Used ${userKey.usageCount} times` : ''}
+                            </div>
+                        </div>
+                        <div class="script-actions">
+                            <button class="btn btn-secondary btn-small" onclick="copyText('${userKey.key}')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="removeUserKey('${userKey._id}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>`
+                ).join('');
+
+                document.getElementById('userKeysContainer').innerHTML = keysHtml;
+            } catch (error) {
+                console.error('Error loading user keys:', error);
+                // Show mock data when API fails
+                showMockUserKeys();
+                showNotification('Using mock data for user keys - API connection failed', 'info');
+            }
         }
 
         function copyText(text) {
@@ -1472,12 +1471,22 @@
             });
         }
 
-        function removeUserKey(keyId) {
+        async function removeUserKey(keyId) {
             if (!confirm('Are you sure you want to remove this user key?')) return;
             
-            currentUserKeys = currentUserKeys.filter(key => key._id !== keyId);
-            loadUserKeys();
-            showNotification('User key removed successfully!', 'success');
+            try {
+                const result = await apiCall(`/api/userKeys/${keyId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (result && result.message) {
+                    loadUserKeys();
+                    showNotification('User key removed successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Error removing user key:', error);
+                showNotification('Error removing user key', 'error');
+            }
         }
 
         function setupNavigation() {
@@ -1711,25 +1720,31 @@
 
             const addUserKeyForm = document.getElementById('addUserKeyForm');
             if (addUserKeyForm) {
-                addUserKeyForm.addEventListener('submit', (e) => {
+                addUserKeyForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.target);
                     const username = formData.get('username');
                     const customKey = formData.get('customKey');
                     
-                    // Generate new user key
-                    const newUserKey = {
-                        _id: Date.now().toString(),
-                        username: username,
-                        key: customKey || `${selectedProject._id}_${Math.random().toString(36).substr(2, 16)}`,
-                        createdAt: new Date(),
-                        isActive: true
-                    };
-                    
-                    currentUserKeys.push(newUserKey);
-                    loadUserKeys();
-                    closeModal();
-                    showNotification('User key added successfully!', 'success');
+                    try {
+                        const result = await apiCall('/api/userKeys', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                username: username,
+                                projectId: selectedProject._id,
+                                customKey: customKey || undefined
+                            })
+                        });
+                        
+                        if (result && result.userKey) {
+                            loadUserKeys();
+                            closeModal();
+                            showNotification('User key added successfully!', 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error adding user key:', error);
+                        showNotification('Error adding user key', 'error');
+                    }
                 });
             }
         }
@@ -1944,6 +1959,192 @@
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/';
+        }
+
+        // Mock data functions for when API calls fail
+        function showMockProjects() {
+            const mockProjects = [
+                {
+                    _id: 'mock-project-1',
+                    name: 'Game Scripts',
+                    description: 'Scripts for gaming automation',
+                    scriptCount: 3,
+                    userKeyCount: 15
+                },
+                {
+                    _id: 'mock-project-2', 
+                    name: 'Web Tools',
+                    description: 'Web scraping and automation tools',
+                    scriptCount: 2,
+                    userKeyCount: 8
+                },
+                {
+                    _id: 'mock-project-3',
+                    name: 'Discord Bots',
+                    description: 'Discord bot automation scripts',
+                    scriptCount: 1,
+                    userKeyCount: 5
+                }
+            ];
+            
+            currentProjects = mockProjects;
+            
+            const projectsHtml = mockProjects.map(project => 
+                `<div class="project-card" onclick="selectProject('${project._id}')" data-project-id="${project._id}">
+                    <div class="project-header">
+                        <div class="project-name">${project.name}</div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 10px;">${project.description || 'No description'}</p>
+                    <div class="project-stats">
+                        <span><i class="fas fa-code"></i> ${project.scriptCount} scripts</span>
+                        <span><i class="fas fa-key"></i> ${project.userKeyCount} keys</span>
+                    </div>
+                </div>`
+            ).join('');
+            
+            document.getElementById('projectsGrid').innerHTML = projectsHtml;
+        }
+
+        function showMockScripts() {
+            if (!selectedProject) return;
+            
+            const mockScripts = [
+                {
+                    _id: 'mock-script-1',
+                    name: 'Auto Farm Script',
+                    status: 'active',
+                    content: 'print("Auto farming activated")',
+                    loader: '-- Mock loader code for auto farm script'
+                },
+                {
+                    _id: 'mock-script-2',
+                    name: 'Speed Hack',
+                    status: 'inactive', 
+                    content: 'game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100',
+                    loader: '-- Mock loader code for speed hack'
+                },
+                {
+                    _id: 'mock-script-3',
+                    name: 'Teleport Script',
+                    status: 'active',
+                    content: 'game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 100, 0)',
+                    loader: '-- Mock loader code for teleport script'
+                }
+            ];
+            
+            currentProjectScripts = mockScripts.slice(0, Math.random() * 3 + 1);
+            
+            const scriptsHtml = currentProjectScripts.map(script => 
+                `<div class="script-item">
+                    <div class="script-info">
+                        <div class="script-name">${script.name}</div>
+                        <span class="script-status status-${script.status}">${script.status}</span>
+                    </div>
+                    <div class="script-actions">
+                        <button class="btn btn-secondary btn-small" onclick="openScriptSettings('${script._id}')">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button class="btn btn-primary btn-small" onclick="getLoader('${script._id}')">
+                            <i class="fas fa-download"></i> Get Loader
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="deleteScript('${script._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>`
+            ).join('');
+            
+            document.getElementById('projectScriptsContainer').innerHTML = scriptsHtml;
+        }
+
+        function showMockUserKeys() {
+            if (!selectedProject) return;
+            
+            const mockUserKeys = [
+                {
+                    _id: 'mock-key-1',
+                    username: 'user123',
+                    key: `${selectedProject._id}_demo_key_123abc`,
+                    createdAt: new Date(),
+                    lastUsed: new Date(Date.now() - 3600000),
+                    usageCount: 42
+                },
+                {
+                    _id: 'mock-key-2',
+                    username: 'player456',
+                    key: `${selectedProject._id}_demo_key_456def`,
+                    createdAt: new Date(Date.now() - 86400000),
+                    lastUsed: new Date(Date.now() - 7200000),
+                    usageCount: 18
+                },
+                {
+                    _id: 'mock-key-3',
+                    username: 'gamer789',
+                    key: `${selectedProject._id}_demo_key_789ghi`,
+                    createdAt: new Date(Date.now() - 172800000),
+                    usageCount: 7
+                }
+            ];
+            
+            currentUserKeys = mockUserKeys.slice(0, Math.random() * 3 + 1);
+            
+            const keysHtml = currentUserKeys.map(userKey => 
+                `<div class="user-key-item">
+                    <div class="user-key-info">
+                        <div class="user-key-username">${userKey.username}</div>
+                        <div class="user-key-value">${userKey.key}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                            Created: ${new Date(userKey.createdAt).toLocaleDateString()}
+                            ${userKey.lastUsed ? ` | Last used: ${new Date(userKey.lastUsed).toLocaleDateString()}` : ''}
+                            ${userKey.usageCount ? ` | Used ${userKey.usageCount} times` : ''}
+                        </div>
+                    </div>
+                    <div class="script-actions">
+                        <button class="btn btn-secondary btn-small" onclick="copyText('${userKey.key}')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="removeUserKey('${userKey._id}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>`
+            ).join('');
+
+            document.getElementById('userKeysContainer').innerHTML = keysHtml;
+        }
+
+        function showMockDashboardData() {
+            // Mock dashboard stats
+            document.getElementById('projectsCount').textContent = '3';
+            document.getElementById('scriptsCount').textContent = '6';
+            document.getElementById('userKeysCount').textContent = '28';
+            document.getElementById('executionsCount').textContent = '1,247';
+            
+            // Mock monthly progress
+            document.getElementById('obfuscationsUsed').textContent = '24';
+            document.getElementById('obfuscationsLimit').textContent = '100';
+            document.getElementById('obfuscationsProgress').style.width = '24%';
+            
+            document.getElementById('monthlyKeysUsed').textContent = '28';
+            document.getElementById('monthlyKeysLimit').textContent = '50';
+            document.getElementById('keysProgress').style.width = '56%';
+            
+            // Mock recent activity
+            const mockActivity = [
+                { action: 'Script uploaded', target: 'Auto Farm Script v2.1', time: new Date() },
+                { action: 'User key added', target: 'player456@discord', time: new Date(Date.now() - 3600000) },
+                { action: 'Project created', target: 'Discord Bots', time: new Date(Date.now() - 7200000) },
+                { action: 'Script executed', target: 'Speed Hack v1.0', time: new Date(Date.now() - 10800000) }
+            ];
+            
+            const activityHtml = mockActivity.map(activity => 
+                `<div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                    <strong>${activity.action}</strong> - ${activity.target}
+                    <div style="font-size: 12px; color: var(--text-secondary);">${new Date(activity.time).toLocaleString()}</div>
+                </div>`
+            ).join('');
+            document.getElementById('recentActivity').innerHTML = activityHtml;
         }
 
         // Load saved theme

@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck Auth - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #4facfe;
+            --dark-blue: #2563eb;
+            --gradient-bg: #000000;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --modal-bg: rgba(0, 0, 0, 0.9);
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --input-text: #ffffff;
+            --hover-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="light"] {
+            --gradient-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --card-bg: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --border-color: #e2e8f0;
+            --modal-bg: #ffffff;
+            --input-bg: #f7fafc;
+            --input-text: #1a202c;
+            --hover-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .logo .icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Custom Button Styles */
+        .btn {
+            position: relative;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .content-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-nav-item {
+            padding: 8px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .section-nav-item.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-card.selected {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.3);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .project-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .project-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .script-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .script-info {
+            flex: 1;
+        }
+
+        .script-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .script-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #ef4444;
+            color: white;
+        }
+
+        .script-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .user-key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .user-key-info {
+            flex: 1;
+        }
+
+        .user-key-username {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .user-key-value {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--input-bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--modal-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .code-textarea {
+            font-family: 'Courier New', monospace;
+            min-height: 200px;
+        }
+
+        /* Custom Dropdown */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-selected {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-selected:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .dropdown-selected.open {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-selected.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--modal-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .dropdown-options.open {
+            display: block;
+            animation: dropdownSlide 0.3s ease;
+        }
+
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-option {
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .dropdown-option:hover {
+            background: var(--hover-bg);
+        }
+
+        .dropdown-option.selected {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Script Settings Layout */
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .settings-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .settings-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary-blue);
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active::before {
+            left: 28px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-blue);
+            transition: width 0.3s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .project-details {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .project-details.active {
+            display: block;
+        }
+
+        .key-generator {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .key-display {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .key-input {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        /* Notification System */
+        .notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .notification {
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #10b981;
+        }
+
+        .notification-error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+
+        .notification-info {
+            background: rgba(79, 172, 254, 0.2);
+            border-color: rgba(79, 172, 254, 0.4);
+            color: #4facfe;
+        }
+
+        [data-theme="light"] .notification {
+            background: #ffffff;
+            color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="light"] .notification-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        [data-theme="light"] .notification-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        [data-theme="light"] .notification-info {
+            background: rgba(79, 172, 254, 0.1);
+            color: #2563eb;
+        }
+
+        .notification-icon {
+            font-size: 18px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification-container {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .settings-control {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <div class="sidebar">
+        <div class="logo">
+            <div class="icon">🦆</div>
+            <span>Duck Auth</span>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="projects">
+                    <i class="fas fa-folder"></i>
+                    Projects
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-section="account">
+                    <i class="fas fa-user-cog"></i>
+                    Account
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName">User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-folder"></i>
+                    <div class="stat-number" id="projectsCount">0</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-code"></i>
+                    <div class="stat-number" id="scriptsCount">0</div>
+                    <div class="stat-label">Scripts</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-key"></i>
+                    <div class="stat-number" id="userKeysCount">0</div>
+                    <div class="stat-label">User Keys</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-number" id="executionsCount">0</div>
+                    <div class="stat-label">Executions</div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>Monthly Limits</h3>
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>Obfuscations</span>
+                        <span><span id="obfuscationsUsed">0</span>/<span id="obfuscationsLimit">100</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="obfuscationsProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>User Keys</span>
+                        <span><span id="monthlyKeysUsed">0</span>/<span id="monthlyKeysLimit">50</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="keysProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>Recent Activity</h3>
+                <div id="recentActivity">
+                    <p style="color: var(--text-secondary);">Loading activity...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div id="projectsSection" class="section" style="display: none;">
+            <div class="section-header">
+                <h2>Projects</h2>
+                <button class="btn btn-primary" onclick="openModal('createProject')">
+                    <i class="fas fa-plus"></i>
+                    New Project
+                </button>
+            </div>
+            
+            <div class="projects-grid" id="projectsGrid">
+                <!-- Projects will be loaded here -->
+            </div>
+
+            <!-- Project Details Panel -->
+            <div class="project-details" id="projectDetails">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 id="selectedProjectName">Select a Project</h3>
+                        <button class="btn btn-secondary" onclick="closeProjectDetails()">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                    </div>
+
+                    <div class="section-nav">
+                        <div class="section-nav-item active" data-tab="scripts">
+                            <i class="fas fa-code"></i> Scripts
+                        </div>
+                        <div class="section-nav-item" data-tab="userkeys">
+                            <i class="fas fa-key"></i> User Keys
+                        </div>
+                    </div>
+
+                    <!-- Scripts Tab -->
+                    <div class="tab-content" id="scriptsTab">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                            <h4>Project Scripts</h4>
+                            <button class="btn btn-primary" onclick="openModal('uploadScript')">
+                                <i class="fas fa-upload"></i>
+                                Upload Script
+                            </button>
+                        </div>
+                        <div id="projectScriptsContainer">
+                            <!-- Project scripts will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- User Keys Tab -->
+                    <div class="tab-content" id="userkeysTab" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                            <h4>User Keys</h4>
+                            <button class="btn btn-primary" onclick="openModal('addUserKey')">
+                                <i class="fas fa-user-plus"></i>
+                                Add User Key
+                            </button>
+                        </div>
+                        <div id="userKeysContainer">
+                            <!-- User keys will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Section -->
+        <div id="accountSection" class="section" style="display: none;">
+            <div class="content-section">
+                <h3>Profile Settings</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileUsername">Username</label>
+                        <input type="text" id="profileUsername" name="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEmail">Email</label>
+                        <input type="email" id="profileEmail" name="email">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+
+            <div class="content-section">
+                <h3>API Key</h3>
+                <div class="form-group">
+                    <label>Your Main API Key</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="apiKeyField" readonly style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="copyApiKey()">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h3>Subscription</h3>
+                <p>Current Plan: <strong id="subscriptionPlan">Free</strong></p>
+                <button class="btn btn-primary">Upgrade Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Modal</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Modal content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentProjects = [];
+        let selectedProject = null;
+        let currentProjectScripts = [];
+        let currentUserKeys = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboard();
+            setupNavigation();
+            setupTabNavigation();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/';
+                return;
+            }
+            
+            currentUser = JSON.parse(user);
+            updateUserDisplay();
+        }
+
+        function updateUserDisplay() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = currentUser.username;
+                document.getElementById('userAvatar').textContent = currentUser.username.charAt(0).toUpperCase();
+                if (document.getElementById('profileUsername')) {
+                    document.getElementById('profileUsername').value = currentUser.username;
+                    document.getElementById('profileEmail').value = currentUser.email;
+                    document.getElementById('apiKeyField').value = currentUser.apiKey;
+                }
+            }
+        }
+
+        // Custom Dropdown Component
+        function createCustomDropdown(container, options, selectedValue, onSelect) {
+            const dropdown = document.createElement('div');
+            dropdown.className = 'custom-dropdown';
+            
+            const selected = document.createElement('div');
+            selected.className = 'dropdown-selected';
+            
+            const selectedText = document.createElement('span');
+            const selectedOption = options.find(opt => opt.value === selectedValue) || options[0];
+            selectedText.textContent = selectedOption.label;
+            
+            const arrow = document.createElement('i');
+            arrow.className = 'fas fa-chevron-down dropdown-arrow';
+            
+            selected.appendChild(selectedText);
+            selected.appendChild(arrow);
+            
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'dropdown-options';
+            
+            options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'dropdown-option';
+                if (option.value === selectedValue) {
+                    optionElement.classList.add('selected');
+                }
+                optionElement.textContent = option.label;
+                optionElement.onclick = () => {
+                    selectedText.textContent = option.label;
+                    optionsContainer.querySelectorAll('.dropdown-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    optionElement.classList.add('selected');
+                    selected.classList.remove('open');
+                    optionsContainer.classList.remove('open');
+                    onSelect(option.value);
+                };
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            selected.onclick = (e) => {
+                e.stopPropagation();
+                const isOpen = selected.classList.contains('open');
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.dropdown-selected.open').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
+                document.querySelectorAll('.dropdown-options.open').forEach(options => {
+                    options.classList.remove('open');
+                });
+                
+                if (!isOpen) {
+                    selected.classList.add('open');
+                    optionsContainer.classList.add('open');
+                }
+            };
+            
+            dropdown.appendChild(selected);
+            dropdown.appendChild(optionsContainer);
+            container.appendChild(dropdown);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                selected.classList.remove('open');
+                optionsContainer.classList.remove('open');
+            });
+            
+            return {
+                setValue: (value) => {
+                    const option = options.find(opt => opt.value === value);
+                    if (option) {
+                        selectedText.textContent = option.label;
+                        optionsContainer.querySelectorAll('.dropdown-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        optionsContainer.querySelector(`[data-value="${value}"]`)?.classList.add('selected');
+                    }
+                },
+                getValue: () => {
+                    const selectedOption = optionsContainer.querySelector('.dropdown-option.selected');
+                    return options.find(opt => opt.label === selectedOption?.textContent)?.value;
+                }
+            };
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle'
+            };
+
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="notification-icon ${icons[type]}"></i>
+                <div class="notification-content">${message}</div>
+                <button class="notification-close" onclick="removeNotification(this.parentElement)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            container.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            // Auto remove
+            setTimeout(() => removeNotification(notification), duration);
+        }
+
+        function removeNotification(notification) {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('token');
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+            
+            try {
+                const response = await fetch(endpoint, { ...defaultOptions, ...options });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call error:', error);
+                throw error;
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const data = await apiCall('/api/dashboard/stats');
+                
+                if (data && data.stats) {
+                    document.getElementById('projectsCount').textContent = data.stats.projects;
+                    document.getElementById('scriptsCount').textContent = data.stats.scripts;
+                    document.getElementById('userKeysCount').textContent = data.stats.users;
+                    document.getElementById('executionsCount').textContent = data.stats.executions;
+                }
+
+                if (data && data.monthlyStats) {
+                    const obf = data.monthlyStats.obfuscations;
+                    const keys = data.monthlyStats.users;
+                    
+                    document.getElementById('obfuscationsUsed').textContent = obf.used;
+                    document.getElementById('obfuscationsLimit').textContent = obf.limit;
+                    document.getElementById('obfuscationsProgress').style.width = obf.percentage + '%';
+                    
+                    document.getElementById('monthlyKeysUsed').textContent = keys.used;
+                    document.getElementById('monthlyKeysLimit').textContent = keys.limit;
+                    document.getElementById('keysProgress').style.width = keys.percentage + '%';
+                }
+
+                if (data && data.recentActivity) {
+                    const activityHtml = data.recentActivity.map(activity => 
+                        `<div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                            <strong>${activity.action}</strong> - ${activity.target}
+                            <div style="font-size: 12px; color: var(--text-secondary);">${new Date(activity.time).toLocaleString()}</div>
+                        </div>`
+                    ).join('');
+                    document.getElementById('recentActivity').innerHTML = activityHtml;
+                } else {
+                    document.getElementById('recentActivity').innerHTML = '<p style="color: var(--text-secondary);">No recent activity</p>';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Show mock data when API fails
+                showMockDashboardData();
+                showNotification('Using mock data for dashboard - API connection failed', 'info');
+            }
+        }
+
+        async function loadProjects() {
+            try {
+                const data = await apiCall('/api/projects');
+                currentProjects = data.projects || [];
+                
+                if (currentProjects.length === 0) {
+                    document.getElementById('projectsGrid').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <h3>No Projects Yet</h3>
+                            <p>Create your first project to get started!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const projectsHtml = currentProjects.map(project => 
+                    `<div class="project-card" onclick="selectProject('${project._id}')" data-project-id="${project._id}">
+                        <div class="project-header">
+                            <div class="project-name">${project.name}</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;">${project.description || 'No description'}</p>
+                        <div class="project-stats">
+                            <span><i class="fas fa-code"></i> ${project.scriptCount || 0} scripts</span>
+                            <span><i class="fas fa-key"></i> ${project.userKeyCount || 0} keys</span>
+                        </div>
+                    </div>`
+                ).join('');
+                
+                document.getElementById('projectsGrid').innerHTML = projectsHtml;
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                // Show mock data when API fails
+                showMockProjects();
+                showNotification('Using mock data - API connection failed', 'info');
+            }
+        }
+
+        function selectProject(projectId) {
+            selectedProject = currentProjects.find(p => p._id === projectId);
+            if (!selectedProject) return;
+
+            // Update UI
+            document.querySelectorAll('.project-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-project-id="${projectId}"]`).classList.add('selected');
+
+            document.getElementById('selectedProjectName').textContent = selectedProject.name;
+            document.getElementById('projectDetails').classList.add('active');
+
+            // Load project data
+            loadProjectScripts();
+            loadUserKeys();
+            
+            showNotification(`Selected project: ${selectedProject.name}`, 'info');
+        }
+
+        function closeProjectDetails() {
+            document.getElementById('projectDetails').classList.remove('active');
+            document.querySelectorAll('.project-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedProject = null;
+        }
+
+        async function loadProjectScripts() {
+            if (!selectedProject) return;
+
+            try {
+                const data = await apiCall(`/api/projects/${selectedProject._id}`);
+                currentProjectScripts = data.scripts || [];
+                
+                if (currentProjectScripts.length === 0) {
+                    document.getElementById('projectScriptsContainer').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-code"></i>
+                            <h3>No Scripts Yet</h3>
+                            <p>Upload your first script to this project!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const scriptsHtml = currentProjectScripts.map(script => 
+                    `<div class="script-item">
+                        <div class="script-info">
+                            <div class="script-name">${script.name}</div>
+                            <span class="script-status status-${script.status}">${script.status}</span>
+                        </div>
+                        <div class="script-actions">
+                            <button class="btn btn-secondary btn-small" onclick="openScriptSettings('${script._id}')">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                            <button class="btn btn-primary btn-small" onclick="getLoader('${script._id}')">
+                                <i class="fas fa-download"></i> Get Loader
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteScript('${script._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>`
+                ).join('');
+                
+                document.getElementById('projectScriptsContainer').innerHTML = scriptsHtml;
+            } catch (error) {
+                console.error('Error loading project scripts:', error);
+                // Show mock data when API fails
+                showMockScripts();
+                showNotification('Using mock data for scripts - API connection failed', 'info');
+            }
+        }
+
+        async function loadUserKeys() {
+            if (!selectedProject) return;
+
+            try {
+                const data = await apiCall(`/api/userKeys/project/${selectedProject._id}`);
+                currentUserKeys = data.userKeys || [];
+                
+                if (currentUserKeys.length === 0) {
+                    document.getElementById('userKeysContainer').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-key"></i>
+                            <h3>No User Keys Yet</h3>
+                            <p>Add user keys to whitelist users for this project!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const keysHtml = currentUserKeys.map(userKey => 
+                    `<div class="user-key-item">
+                        <div class="user-key-info">
+                            <div class="user-key-username">${userKey.username}</div>
+                            <div class="user-key-value">${userKey.key}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                                Created: ${new Date(userKey.createdAt).toLocaleDateString()}
+                                ${userKey.lastUsed ? ` | Last used: ${new Date(userKey.lastUsed).toLocaleDateString()}` : ''}
+                                ${userKey.usageCount ? ` | Used ${userKey.usageCount} times` : ''}
+                            </div>
+                        </div>
+                        <div class="script-actions">
+                            <button class="btn btn-secondary btn-small" onclick="copyText('${userKey.key}')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="removeUserKey('${userKey._id}')">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    </div>`
+                ).join('');
+
+                document.getElementById('userKeysContainer').innerHTML = keysHtml;
+            } catch (error) {
+                console.error('Error loading user keys:', error);
+                // Show mock data when API fails
+                showMockUserKeys();
+                showNotification('Using mock data for user keys - API connection failed', 'info');
+            }
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy', 'error');
+            });
+        }
+
+        async function removeUserKey(keyId) {
+            if (!confirm('Are you sure you want to remove this user key?')) return;
+            
+            try {
+                const result = await apiCall(`/api/userKeys/${keyId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (result && result.message) {
+                    loadUserKeys();
+                    showNotification('User key removed successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Error removing user key:', error);
+                showNotification('Error removing user key', 'error');
+            }
+        }
+
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (section) {
+                        showSection(section);
+                    }
+                });
+            });
+        }
+
+        function setupTabNavigation() {
+            document.querySelectorAll('.section-nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    
+                    // Update active tab
+                    document.querySelectorAll('.section-nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    document.getElementById(tab + 'Tab').style.display = 'block';
+                });
+            });
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(sectionName + 'Section');
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+            
+            // Add active class to selected nav link
+            const selectedLink = document.querySelector(`[data-section="${sectionName}"]`);
+            if (selectedLink) {
+                selectedLink.classList.add('active');
+            }
+            
+            // Update page title
+            document.getElementById('pageTitle').textContent = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+            
+            // Load section-specific data
+            switch(sectionName) {
+                case 'projects':
+                    loadProjects();
+                    closeProjectDetails();
+                    break;
+                case 'account':
+                    updateUserDisplay();
+                    break;
+            }
+        }
+
+        function openModal(type) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            switch(type) {
+                case 'createProject':
+                    title.textContent = 'Create New Project';
+                    body.innerHTML = `
+                        <form id="createProjectForm">
+                            <div class="form-group">
+                                <label for="projectName">Project Name</label>
+                                <input type="text" id="projectName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="projectDescription">Description</label>
+                                <textarea id="projectDescription" name="description" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Project</button>
+                        </form>
+                    `;
+                    break;
+                    
+                case 'uploadScript':
+                    if (!selectedProject) {
+                        showNotification('Please select a project first', 'error');
+                        return;
+                    }
+                    title.textContent = 'Upload Script';
+                    body.innerHTML = `
+                        <form id="uploadScriptForm">
+                            <input type="hidden" name="projectId" value="${selectedProject._id}">
+                            <div class="form-group">
+                                <label>Project: <strong>${selectedProject.name}</strong></label>
+                            </div>
+                            <div class="form-group">
+                                <label for="scriptName">Script Name</label>
+                                <input type="text" id="scriptName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="scriptContent">Script Content</label>
+                                <textarea id="scriptContent" name="content" class="code-textarea" placeholder="-- Your Lua script here" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="loaderType">Loader Type</label>
+                                <div id="loaderTypeDropdown"></div>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" name="owo" id="owoOption"> OWO Protection
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload Script</button>
+                        </form>
+                    `;
+                    
+                    // Create custom dropdown for loader type
+                    const loaderOptions = [
+                        { value: 'basic', label: 'Basic' },
+                        { value: 'advanced', label: 'Advanced' },
+                        { value: 'custom', label: 'Custom' }
+                    ];
+                    createCustomDropdown(
+                        document.getElementById('loaderTypeDropdown'),
+                        loaderOptions,
+                        'basic',
+                        (value) => {
+                            // Handle loader type selection
+                        }
+                    );
+                    break;
+
+                case 'addUserKey':
+                    if (!selectedProject) {
+                        showNotification('Please select a project first', 'error');
+                        return;
+                    }
+                    title.textContent = 'Add User Key';
+                    body.innerHTML = `
+                        <form id="addUserKeyForm">
+                            <div class="form-group">
+                                <label>Project: <strong>${selectedProject.name}</strong></label>
+                            </div>
+                            <div class="form-group">
+                                <label for="keyUsername">Username</label>
+                                <input type="text" id="keyUsername" name="username" placeholder="Enter username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="customKey">Custom Key (optional)</label>
+                                <input type="text" id="customKey" name="customKey" placeholder="Leave empty to auto-generate">
+                                <small style="color: var(--text-secondary);">If empty, a random key will be generated</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add User Key</button>
+                        </form>
+                    `;
+                    break;
+            }
+            
+            modal.style.display = 'block';
+            setupModalForms();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function setupModalForms() {
+            const createProjectForm = document.getElementById('createProjectForm');
+            if (createProjectForm) {
+                createProjectForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData);
+                    
+                    try {
+                        const result = await apiCall('/api/projects', {
+                            method: 'POST',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (result && result.project) {
+                            closeModal();
+                            loadProjects();
+                            showNotification('Project created successfully!', 'success');
+                        }
+                    } catch (error) {
+                        showNotification('Error creating project', 'error');
+                    }
+                });
+            }
+            
+            const uploadScriptForm = document.getElementById('uploadScriptForm');
+            if (uploadScriptForm) {
+                uploadScriptForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData);
+                    data.settings = {
+                        loaderType: document.querySelector('#loaderTypeDropdown .dropdown-option.selected')?.textContent.toLowerCase() || 'basic',
+                        options: {
+                            owo: !!data.owo
+                        }
+                    };
+                    
+                    try {
+                        const result = await apiCall('/api/scripts', {
+                            method: 'POST',
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (result && result.script) {
+                            closeModal();
+                            loadProjectScripts();
+                            showNotification('Script uploaded successfully!', 'success');
+                        }
+                    } catch (error) {
+                        showNotification('Error uploading script', 'error');
+                    }
+                });
+            }
+
+            const addUserKeyForm = document.getElementById('addUserKeyForm');
+            if (addUserKeyForm) {
+                addUserKeyForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const username = formData.get('username');
+                    const customKey = formData.get('customKey');
+                    
+                    try {
+                        const result = await apiCall('/api/userKeys', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                username: username,
+                                projectId: selectedProject._id,
+                                customKey: customKey || undefined
+                            })
+                        });
+                        
+                        if (result && result.userKey) {
+                            loadUserKeys();
+                            closeModal();
+                            showNotification('User key added successfully!', 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error adding user key:', error);
+                        showNotification('Error adding user key', 'error');
+                    }
+                });
+            }
+        }
+
+        function getLoader(scriptId) {
+            const script = currentProjectScripts.find(s => s._id === scriptId);
+            if (!script) return;
+            
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            title.textContent = 'Script Loader';
+            body.innerHTML = `
+                <div class="form-group">
+                    <label>Loader Code</label>
+                    <textarea id="loaderCode" class="code-textarea" readonly>${script.loader || 'No loader available'}</textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="copyLoader()">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function openScriptSettings(scriptId) {
+            const script = currentProjectScripts.find(s => s._id === scriptId);
+            if (!script) return;
+            
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            
+            title.textContent = 'Script Settings';
+            body.innerHTML = `
+                <form id="scriptSettingsForm">
+                    <div class="form-group">
+                        <label for="editScriptName">Script Name</label>
+                        <input type="text" id="editScriptName" name="name" value="${script.name}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editScriptContent">Script Content</label>
+                        <textarea id="editScriptContent" name="content" class="code-textarea" required>${script.content}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Script Features</label>
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-label">OWO Protection</div>
+                                <div class="settings-description">Advanced anti-reverse engineering protection</div>
+                            </div>
+                            <div class="settings-control">
+                                <div class="toggle-switch ${script.settings?.options?.owo ? 'active' : ''}" onclick="toggleSwitch(this)" data-setting="owo">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-label">Code Obfuscation</div>
+                                <div class="settings-description">Obfuscate script code to prevent reading</div>
+                            </div>
+                            <div class="settings-control">
+                                <div class="toggle-switch ${script.settings?.obfuscated !== false ? 'active' : ''}" onclick="toggleSwitch(this)" data-setting="obfuscated">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-label">Code Minification</div>
+                                <div class="settings-description">Compress code to reduce size</div>
+                            </div>
+                            <div class="settings-control">
+                                <div class="toggle-switch ${script.settings?.options?.minified !== false ? 'active' : ''}" onclick="toggleSwitch(this)" data-setting="minified">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <div>
+                                <div class="settings-label">Anti-Debug</div>
+                                <div class="settings-description">Prevent script debugging and analysis</div>
+                            </div>
+                            <div class="settings-control">
+                                <div class="toggle-switch" onclick="toggleSwitch(this)" data-setting="antidebug">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editScriptStatus">Status</label>
+                        <div id="statusDropdown"></div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    </div>
+                </form>
+            `;
+            
+            // Create custom dropdown for status
+            const statusOptions = [
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+                { value: 'maintenance', label: 'Maintenance' }
+            ];
+            createCustomDropdown(
+                document.getElementById('statusDropdown'),
+                statusOptions,
+                script.status,
+                (value) => {
+                    // Handle status selection
+                }
+            );
+            
+            modal.style.display = 'block';
+            
+            document.getElementById('scriptSettingsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                // Collect toggle switch states
+                const settings = {
+                    loaderType: script.settings?.loaderType || 'basic',
+                    options: {
+                        owo: document.querySelector('[data-setting="owo"]').classList.contains('active'),
+                        obfuscated: document.querySelector('[data-setting="obfuscated"]').classList.contains('active'),
+                        minified: document.querySelector('[data-setting="minified"]').classList.contains('active'),
+                        antidebug: document.querySelector('[data-setting="antidebug"]').classList.contains('active')
+                    }
+                };
+                
+                data.settings = settings;
+                data.status = document.querySelector('#statusDropdown .dropdown-option.selected')?.textContent.toLowerCase() || script.status;
+                
+                try {
+                    const result = await apiCall(`/api/scripts/${scriptId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (result && result.script) {
+                        closeModal();
+                        loadProjectScripts();
+                        showNotification('Script updated successfully!', 'success');
+                    }
+                } catch (error) {
+                    showNotification('Error updating script', 'error');
+                }
+            });
+        }
+
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        async function deleteScript(scriptId) {
+            if (!confirm('Are you sure you want to delete this script?')) return;
+            
+            try {
+                const result = await apiCall(`/api/scripts/${scriptId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (result && result.message) {
+                    loadProjectScripts();
+                    showNotification('Script deleted successfully!', 'success');
+                }
+            } catch (error) {
+                showNotification('Error deleting script', 'error');
+            }
+        }
+
+        function copyLoader() {
+            const textarea = document.getElementById('loaderCode');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                showNotification('Loader copied to clipboard!', 'success');
+            });
+        }
+
+        function copyApiKey() {
+            const field = document.getElementById('apiKeyField');
+            navigator.clipboard.writeText(field.value).then(() => {
+                showNotification('API key copied to clipboard!', 'success');
+            });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const isLight = body.hasAttribute('data-theme');
+            
+            if (isLight) {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Mock data functions for when API calls fail
+        function showMockProjects() {
+            const mockProjects = [
+                {
+                    _id: 'mock-project-1',
+                    name: 'Game Scripts',
+                    description: 'Scripts for gaming automation',
+                    scriptCount: 3,
+                    userKeyCount: 15
+                },
+                {
+                    _id: 'mock-project-2', 
+                    name: 'Web Tools',
+                    description: 'Web scraping and automation tools',
+                    scriptCount: 2,
+                    userKeyCount: 8
+                },
+                {
+                    _id: 'mock-project-3',
+                    name: 'Discord Bots',
+                    description: 'Discord bot automation scripts',
+                    scriptCount: 1,
+                    userKeyCount: 5
+                }
+            ];
+            
+            currentProjects = mockProjects;
+            
+            const projectsHtml = mockProjects.map(project => 
+                `<div class="project-card" onclick="selectProject('${project._id}')" data-project-id="${project._id}">
+                    <div class="project-header">
+                        <div class="project-name">${project.name}</div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <p style="color: var(--text-secondary); margin-bottom: 10px;">${project.description || 'No description'}</p>
+                    <div class="project-stats">
+                        <span><i class="fas fa-code"></i> ${project.scriptCount} scripts</span>
+                        <span><i class="fas fa-key"></i> ${project.userKeyCount} keys</span>
+                    </div>
+                </div>`
+            ).join('');
+            
+            document.getElementById('projectsGrid').innerHTML = projectsHtml;
+        }
+
+        function showMockScripts() {
+            if (!selectedProject) return;
+            
+            const mockScripts = [
+                {
+                    _id: 'mock-script-1',
+                    name: 'Auto Farm Script',
+                    status: 'active',
+                    content: 'print("Auto farming activated")',
+                    loader: '-- Mock loader code for auto farm script'
+                },
+                {
+                    _id: 'mock-script-2',
+                    name: 'Speed Hack',
+                    status: 'inactive', 
+                    content: 'game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100',
+                    loader: '-- Mock loader code for speed hack'
+                },
+                {
+                    _id: 'mock-script-3',
+                    name: 'Teleport Script',
+                    status: 'active',
+                    content: 'game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 100, 0)',
+                    loader: '-- Mock loader code for teleport script'
+                }
+            ];
+            
+            currentProjectScripts = mockScripts.slice(0, Math.random() * 3 + 1);
+            
+            const scriptsHtml = currentProjectScripts.map(script => 
+                `<div class="script-item">
+                    <div class="script-info">
+                        <div class="script-name">${script.name}</div>
+                        <span class="script-status status-${script.status}">${script.status}</span>
+                    </div>
+                    <div class="script-actions">
+                        <button class="btn btn-secondary btn-small" onclick="openScriptSettings('${script._id}')">
+                            <i class="fas fa-cog"></i> Settings
+                        </button>
+                        <button class="btn btn-primary btn-small" onclick="getLoader('${script._id}')">
+                            <i class="fas fa-download"></i> Get Loader
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="deleteScript('${script._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>`
+            ).join('');
+            
+            document.getElementById('projectScriptsContainer').innerHTML = scriptsHtml;
+        }
+
+        function showMockUserKeys() {
+            if (!selectedProject) return;
+            
+            const mockUserKeys = [
+                {
+                    _id: 'mock-key-1',
+                    username: 'user123',
+                    key: `${selectedProject._id}_demo_key_123abc`,
+                    createdAt: new Date(),
+                    lastUsed: new Date(Date.now() - 3600000),
+                    usageCount: 42
+                },
+                {
+                    _id: 'mock-key-2',
+                    username: 'player456',
+                    key: `${selectedProject._id}_demo_key_456def`,
+                    createdAt: new Date(Date.now() - 86400000),
+                    lastUsed: new Date(Date.now() - 7200000),
+                    usageCount: 18
+                },
+                {
+                    _id: 'mock-key-3',
+                    username: 'gamer789',
+                    key: `${selectedProject._id}_demo_key_789ghi`,
+                    createdAt: new Date(Date.now() - 172800000),
+                    usageCount: 7
+                }
+            ];
+            
+            currentUserKeys = mockUserKeys.slice(0, Math.random() * 3 + 1);
+            
+            const keysHtml = currentUserKeys.map(userKey => 
+                `<div class="user-key-item">
+                    <div class="user-key-info">
+                        <div class="user-key-username">${userKey.username}</div>
+                        <div class="user-key-value">${userKey.key}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
+                            Created: ${new Date(userKey.createdAt).toLocaleDateString()}
+                            ${userKey.lastUsed ? ` | Last used: ${new Date(userKey.lastUsed).toLocaleDateString()}` : ''}
+                            ${userKey.usageCount ? ` | Used ${userKey.usageCount} times` : ''}
+                        </div>
+                    </div>
+                    <div class="script-actions">
+                        <button class="btn btn-secondary btn-small" onclick="copyText('${userKey.key}')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn btn-danger btn-small" onclick="removeUserKey('${userKey._id}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>`
+            ).join('');
+
+            document.getElementById('userKeysContainer').innerHTML = keysHtml;
+        }
+
+        function showMockDashboardData() {
+            // Mock dashboard stats
+            document.getElementById('projectsCount').textContent = '3';
+            document.getElementById('scriptsCount').textContent = '6';
+            document.getElementById('userKeysCount').textContent = '28';
+            document.getElementById('executionsCount').textContent = '1,247';
+            
+            // Mock monthly progress
+            document.getElementById('obfuscationsUsed').textContent = '24';
+            document.getElementById('obfuscationsLimit').textContent = '100';
+            document.getElementById('obfuscationsProgress').style.width = '24%';
+            
+            document.getElementById('monthlyKeysUsed').textContent = '28';
+            document.getElementById('monthlyKeysLimit').textContent = '50';
+            document.getElementById('keysProgress').style.width = '56%';
+            
+            // Mock recent activity
+            const mockActivity = [
+                { action: 'Script uploaded', target: 'Auto Farm Script v2.1', time: new Date() },
+                { action: 'User key added', target: 'player456@discord', time: new Date(Date.now() - 3600000) },
+                { action: 'Project created', target: 'Discord Bots', time: new Date(Date.now() - 7200000) },
+                { action: 'Script executed', target: 'Speed Hack v1.0', time: new Date(Date.now() - 10800000) }
+            ];
+            
+            const activityHtml = mockActivity.map(activity => 
+                `<div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+                    <strong>${activity.action}</strong> - ${activity.target}
+                    <div style="font-size: 12px; color: var(--text-secondary);">${new Date(activity.time).toLocaleString()}</div>
+                </div>`
+            ).join('');
+            document.getElementById('recentActivity').innerHTML = activityHtml;
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('modal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

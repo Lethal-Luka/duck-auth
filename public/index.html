@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck Auth - Secure Your Roblox Scripts</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e1016;
+            --panel: #0e131b;
+            --blue: #3498ff;
+            --blue-light: #3daeff;
+            --text: #e3e8f0;
+            --outline: rgba(52, 152, 255, 0.3);
+            --footer-bg: #0b0c10;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav.navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1100px;
+            background-color: var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: 20px;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 999;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+            backdrop-filter: blur(8px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--blue-light);
+            gap: 10px;
+        }
+
+        .nav-left .icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(45deg, var(--blue), var(--blue-light));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .nav-left a {
+            color: var(--blue-light);
+            text-decoration: none;
+        }
+        .nav-left a:hover {
+            text-decoration: none;
+        }
+
+        .nav-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            flex: none;
+            display: flex;
+            gap: 18px;
+        }
+        .nav-center a {
+            text-decoration: none;
+            font-size: 15px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            transition: all 0.2s ease-in-out;
+            color: var(--text);
+            border: 1px solid transparent;
+        }
+        .nav-center a:hover {
+            border: 1px solid var(--blue-light);
+            background-color: rgba(52, 152, 255, 0.05);
+        }
+        .nav-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .nav-right a {
+            text-decoration: none;
+            font-size: 15px;
+            padding: 6px 14px;
+            border-radius: 12px;
+            color: var(--text);
+            transition: 0.2s ease-in-out;
+        }
+        .nav-right a:hover {
+            background-color: var(--blue);
+            color: white;
+        }
+        .nav-right .register {
+            background-color: var(--blue);
+            color: white;
+        }
+        .nav-right .register:hover {
+            background-color: var(--blue-light);
+        }
+        .nav-right a.login {
+            color: white;
+            font-weight: 600;
+            background-color: transparent;
+            border: none;
+            transition: color 0.3s ease-in-out;
+        }
+        .nav-right a.login:hover {
+            color: var(--blue);
+        }
+
+        .hero {
+            text-align: center;
+            padding-top: 160px;
+            padding-bottom: 40px;
+        }
+        .hero h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--blue), var(--blue-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px;
+            color: #b0b8c9;
+        }
+        .btn {
+            margin-top: 25px;
+            background-color: var(--blue);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+        }
+        .btn:hover {
+            background-color: var(--blue-light);
+        }
+
+        .stats {
+            margin: 60px auto;
+            max-width: 900px;
+            background-color: var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            padding: 30px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .stats .line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stats .line:last-child {
+            border-bottom: none;
+        }
+        .code {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .keyword {
+            color: #8be9fd;
+        }
+        .string {
+            color: #50fa7b;
+        }
+        .count {
+            font-weight: bold;
+            color: var(--text);
+            min-width: 70px;
+            text-align: right;
+            margin-left: 20px;
+        }
+
+        section {
+            scroll-margin-top: 100px;
+        }
+
+        .features {
+            max-width: 1100px;
+            margin: 100px auto 60px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        .features h2 {
+            font-size: 34px;
+            margin-bottom: 40px;
+            color: var(--blue-light);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .feature-card {
+            background-color: var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            padding: 24px;
+            transition: 0.2s ease-in-out;
+            text-align: left;
+        }
+        .feature-card:hover {
+            border-color: var(--blue);
+            box-shadow: 0 0 12px rgba(52, 152, 255, 0.2);
+        }
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--blue);
+        }
+        .feature-card p {
+            font-size: 15px;
+            color: #a0adc0;
+            line-height: 1.6;
+        }
+
+        .faq {
+            max-width: 900px;
+            margin: 80px auto;
+            padding: 0 20px;
+        }
+        .faq h2 {
+            font-size: 34px;
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--blue-light);
+        }
+        .faq-item {
+            background-color: var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: 10px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 16px;
+            font-weight: bold;
+            color: var(--blue);
+            transition: background 0.2s;
+        }
+        .faq-question:hover {
+            background-color: rgba(255,255,255,0.03);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+            padding: 0 16px;
+            color: #a0adc0;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding: 16px;
+        }
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+        .faq-item.open .arrow {
+            transform: rotate(90deg);
+        }
+        .arrow::before {
+            content: '▶';
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .pricing {
+            max-width: 1100px;
+            margin: 80px auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .pricing h2 {
+            font-size: 34px;
+            margin-bottom: 20px;
+            color: var(--blue-light);
+        }
+        .pricing p {
+            font-size: 18px;
+            color: #a0adc0;
+            margin-bottom: 40px;
+        }
+        .pricing-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .card {
+            background-color: var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            width: 300px;
+            padding: 30px;
+            transition: 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .card:hover {
+            border-color: var(--blue);
+            box-shadow: 0 0 20px rgba(52, 152, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        .card.popular {
+            border-color: var(--blue);
+            box-shadow: 0 0 15px rgba(52, 152, 255, 0.3);
+        }
+        .card.popular::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--blue), var(--blue-light));
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .card h3 {
+            font-size: 26px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .card .description {
+            font-size: 14px;
+            color: #a0adc0;
+            margin-bottom: 20px;
+            min-height: 44px;
+            text-align: center;
+        }
+        .card .price {
+            font-size: 48px;
+            color: var(--blue);
+            margin-bottom: 8px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .card .price .month {
+            font-size: 22px;
+            color: #9cc9ff;
+            font-weight: 600;
+        }
+        .card ul {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 20px;
+            padding-left: 0;
+            width: 100%;
+            color: #aaa;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 20px;
+        }
+        .card ul li {
+            margin: 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card ul li:last-child {
+            border-bottom: none;
+        }
+        .card ul li .check {
+            color: var(--blue-light);
+            font-weight: bold;
+        }
+        .card ul li .cross {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .card button {
+            background-color: var(--blue);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+        .card button:hover {
+            background-color: var(--blue-light);
+            transform: translateY(-1px);
+        }
+        .card.popular button {
+            background: linear-gradient(135deg, var(--blue), var(--blue-light));
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            border-top: 1px solid var(--outline);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 80px;
+        }
+        footer a {
+            color: #a0adc0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        footer a:hover {
+            color: var(--blue-light);
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--panel);
+            border: 1px solid var(--outline);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            margin-bottom: 10px;
+            color: var(--blue-light);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--outline);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(52, 152, 255, 0.1);
+        }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .switch-auth {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .switch-auth a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alert-error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #51cf66;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-center {
+                display: none;
+            }
+
+            nav.navbar {
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="icon">🦆</div>
+            <a href="/">Duck Auth</a>
+        </div>
+        <div class="nav-center">
+            <a href="#features">Features</a>
+            <a href="#faq">FAQ</a>
+            <a href="#pricing">Pricing</a>
+        </div>
+        <div class="nav-right">
+            <a href="#" class="login" onclick="openModal('login')">Login</a>
+            <a href="#" class="register" onclick="openModal('register')">Register</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1>Protect & License Your Roblox Code</h1>
+        <p>Duck Auth gives you the tools to block tampering, manage user keys, and protect your work — all with one lightweight system.</p>
+        <button class="btn" onclick="openModal('register')">Start Protecting Your Scripts</button>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats">
+        <div class="line"><span class="code"><span class="keyword">local</span> crackAttemptsBlocked = <span class="string">"1420000"</span>;</span><span class="count">1.42M</span></div>
+        <div class="line"><span class="code"><span class="keyword">local</span> activeUsers = <span class="string">"129000"</span>;</span><span class="count">129K</span></div>
+        <div class="line"><span class="code"><span class="keyword">local</span> keyCount = <span class="string">"405000"</span>;</span><span class="count">405K</span></div>
+        <div class="line"><span class="code"><span class="keyword">local</span> totalExecutions = <span class="string">"18500000"</span>;</span><span class="count">18.5M</span></div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section class="features" id="features">
+        <h2>Everything You Need in One Place</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Secure Key System</h3>
+                <p>Prevent unauthorized access and enforce license control using our built-in key authentication flow.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Robust API</h3>
+                <p>Integrate with ease using a clean, documented API built for developers of all levels.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Anti-Tamper Logic</h3>
+                <p>Stop reverse engineers in their tracks with smart detection and automatic script shutdown.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Custom UI Loader</h3>
+                <p>Provide a professional touch with a skinned, customizable loader that fits your brand.</p>
+            </div>
+            <div class="feature-card">
+                <h3>User Management</h3>
+                <p>Set usage limits per user, per script, or by time window. All controlled from your dashboard.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Detailed Analytics</h3>
+                <p>Track usage, key events, user activity, and performance metrics in real-time.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section class="pricing" id="pricing">
+        <h2>Choose Your Plan</h2>
+        <p>Start free, upgrade when you need more power</p>
+        <div class="pricing-cards">
+            <div class="card">
+                <h3>Starter</h3>
+                <div class="description">Perfect for beginners getting started</div>
+                <div class="price">Free<span class="month">Forever</span></div>
+                <ul>
+                    <li><span class="check">✓</span> 3 Projects</li>
+                    <li><span class="check">✓</span> 10 Scripts per project</li>
+                    <li><span class="check">✓</span> 50 User keys per month</li>
+                    <li><span class="check">✓</span> Basic obfuscation</li>
+                    <li><span class="check">✓</span> Community support</li>
+                    <li><span class="cross">✗</span> Advanced protection</li>
+                    <li><span class="cross">✗</span> Custom loaders</li>
+                    <li><span class="cross">✗</span> Priority support</li>
+                </ul>
+                <button onclick="openModal('register')">Get Started</button>
+            </div>
+            
+            <div class="card popular">
+                <h3>Pro</h3>
+                <div class="description">For serious developers and businesses</div>
+                <div class="price">$15<span class="month">/month</span></div>
+                <ul>
+                    <li><span class="check">✓</span> Unlimited projects</li>
+                    <li><span class="check">✓</span> Unlimited scripts</li>
+                    <li><span class="check">✓</span> 500 User keys per month</li>
+                    <li><span class="check">✓</span> Advanced obfuscation</li>
+                    <li><span class="check">✓</span> OWO Protection</li>
+                    <li><span class="check">✓</span> Custom loaders</li>
+                    <li><span class="check">✓</span> Analytics dashboard</li>
+                    <li><span class="check">✓</span> Priority email support</li>
+                </ul>
+                <button>Upgrade to Pro</button>
+            </div>
+            
+            <div class="card">
+                <h3>Enterprise</h3>
+                <div class="description">Custom solutions for large teams</div>
+                <div class="price">Custom</div>
+                <ul>
+                    <li><span class="check">✓</span> Everything in Pro</li>
+                    <li><span class="check">✓</span> Unlimited user keys</li>
+                    <li><span class="check">✓</span> Custom integrations</li>
+                    <li><span class="check">✓</span> White-label solutions</li>
+                    <li><span class="check">✓</span> Dedicated support</li>
+                    <li><span class="check">✓</span> SLA guarantees</li>
+                    <li><span class="check">✓</span> On-premise deployment</li>
+                    <li><span class="check">✓</span> Custom features</li>
+                </ul>
+                <button>Contact Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section class="faq" id="faq">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+            <div class="faq-question">What is Duck Auth? <span class="arrow"></span></div>
+            <div class="faq-answer">Duck Auth is a licensing and anti‑tamper solution for Roblox developers to protect and manage access to their code.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">How does the key system work? <span class="arrow"></span></div>
+            <div class="faq-answer">Users must enter a valid key to execute your code. You control these keys from a secure dashboard.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Can I manage multiple scripts? <span class="arrow"></span></div>
+            <div class="faq-answer">Yes! You can manage multiple scripts and keys all under one account, with usage separated per script.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Does it work with obfuscators? <span class="arrow"></span></div>
+            <div class="faq-answer">Absolutely. Duck Auth can be used before or after obfuscation and enhances protection when paired together.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">What happens if I hit my limits? <span class="arrow"></span></div>
+            <div class="faq-answer">You can upgrade your plan anytime. Free users can continue using existing keys but can't create new ones until next month.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Is there an API for developers? <span class="arrow"></span></div>
+            <div class="faq-answer">Yes! Pro and Enterprise plans include full API access for custom integrations and automated workflows.</div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div>© Duck Auth <span id="year">2025</span></div>
+        <div style="display:flex; gap:18px;">
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="auth-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <h2 id="modalTitle">Login</h2>
+                <p id="modalSubtitle">Welcome back to Duck Auth</p>
+            </div>
+            
+            <div id="alertContainer"></div>
+            
+            <form id="authForm">
+                <div class="form-group" id="usernameGroup" style="display: none;">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter your username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">
+                    <span id="submitText">Login</span>
+                </button>
+            </form>
+            
+            <div class="switch-auth">
+                <p id="switchText">Don't have an account? <a href="#" onclick="switchAuthMode()">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        document.querySelectorAll('.faq-question').forEach(q => {
+            q.addEventListener('click', () => {
+                q.parentElement.classList.toggle('open');
+            });
+        });
+
+        let isLoginMode = true;
+
+        function openModal(mode) {
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const usernameGroup = document.getElementById('usernameGroup');
+            const submitText = document.getElementById('submitText');
+            const switchText = document.getElementById('switchText');
+
+            isLoginMode = mode === 'login';
+
+            if (isLoginMode) {
+                title.textContent = 'Login';
+                subtitle.textContent = 'Welcome back to Duck Auth';
+                usernameGroup.style.display = 'none';
+                submitText.textContent = 'Login';
+                switchText.innerHTML = 'Don\'t have an account? <a href="#" onclick="switchAuthMode()">Register here</a>';
+            } else {
+                title.textContent = 'Register';
+                subtitle.textContent = 'Join Duck Auth today';
+                usernameGroup.style.display = 'block';
+                submitText.textContent = 'Register';
+                switchText.innerHTML = 'Already have an account? <a href="#" onclick="switchAuthMode()">Login here</a>';
+            }
+
+            modal.style.display = 'block';
+            clearAlert();
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('authForm').reset();
+            clearAlert();
+        }
+
+        function switchAuthMode() {
+            openModal(isLoginMode ? 'register' : 'login');
+        }
+
+        function showAlert(message, type = 'error') {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            if (!isLoginMode && (!data.username || data.username.length < 3)) {
+                showAlert('Username must be at least 3 characters long');
+                return;
+            }
+            
+            if (data.password.length < 6) {
+                showAlert('Password must be at least 6 characters long');
+                return;
+            }
+
+            try {
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    showAlert(result.message, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                } else {
+                    showAlert(result.error);
+                }
+            } catch (error) {
+                showAlert('An error occurred. Please try again.');
+                console.error('Auth error:', error);
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('authModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

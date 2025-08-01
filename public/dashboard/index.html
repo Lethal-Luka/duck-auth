@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duck Auth Dashboard</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span>Duck Auth</span>
+        </div>
+        
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="projects">
+                        <i class="fas fa-folder"></i>
+                        <span>Projects</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="subscription">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Subscription</span>
+                    </a>
+                </li>
+
+
+
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="account">
+                        <i class="fas fa-user"></i>
+                        <span>Account</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="user-info">
+                    <span id="userName">Lethal-Luka</span>
+                    <div class="user-avatar" id="userAvatar">L</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-folder"></i>
+                    <div class="stat-number" id="projectsCount">0</div>
+                    <div class="stat-label">Projects</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-code"></i>
+                    <div class="stat-number" id="scriptsCount">0</div>
+                    <div class="stat-label">Scripts</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-number" id="userKeysCount">0</div>
+                    <div class="stat-label">User Keys</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-play"></i>
+                    <div class="stat-number" id="executionsCount">0</div>
+                    <div class="stat-label">Executions</div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="content-section">
+                    <h3>Monthly Obfuscations</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="obfuscationsProgress"></div>
+                    </div>
+                    <p><span id="obfuscationsUsed">0</span> / <span id="obfuscationsLimit">100</span> used</p>
+                </div>
+                <div class="content-section">
+                    <h3>Monthly User Keys</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="keysProgress"></div>
+                    </div>
+                    <p><span id="monthlyKeysUsed">0</span> / <span id="monthlyKeysLimit">500</span> used</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div id="projectsSection" class="section" style="display: none;">
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Your Projects</h3>
+                    <button class="btn btn-primary" onclick="openModal('createProject')">
+                        <i class="fas fa-plus"></i> Create Project
+                    </button>
+                </div>
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Projects will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Project Details Panel -->
+            <div id="projectDetails" class="project-details">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h3 id="selectedProjectName">Project Name</h3>
+                        <button class="btn btn-secondary" onclick="closeProjectDetails()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    </div>
+
+                    <div class="section-nav">
+                        <div class="section-nav-item active" data-tab="scripts">Scripts</div>
+                        <div class="section-nav-item" data-tab="userKeys">User Keys</div>
+                    </div>
+
+                    <!-- Scripts Tab -->
+                    <div id="scriptsTab" class="tab-content">
+                        <div class="section-header">
+                            <h4>Scripts</h4>
+                            <button class="btn btn-primary" onclick="openModal('uploadScript')">
+                                <i class="fas fa-upload"></i> Upload Script
+                            </button>
+                        </div>
+                        <div id="projectScriptsContainer">
+                            <!-- Scripts will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- User Keys Tab -->
+                    <div id="userKeysTab" class="tab-content" style="display: none;">
+                        <div class="section-header">
+                            <h4>User Keys</h4>
+                            <button class="btn btn-primary" onclick="openModal('addUserKey')">
+                                <i class="fas fa-key"></i> Generate Keys
+                            </button>
+                        </div>
+                        <div id="userKeysContainer">
+                            <!-- User keys will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="subscriptionSection" class="section" style="display: none;">
+            <div class="section-header">
+                <h2>Subscription Management</h2>
+                <p>Manage your Duck Auth subscription and billing</p>
+            </div>
+
+            <!-- Current Subscription -->
+            <div id="currentSubscriptionContainer">
+                <!-- Current subscription will be loaded here -->
+            </div>
+
+            <!-- Available Plans -->
+            <div class="subscription-plans">
+                <h3>Available Plans</h3>
+                <div id="subscriptionPlansContainer" class="plans-grid">
+                    <!-- Subscription plans will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Section -->
+        <div id="accountSection" class="section" style="display: none;">
+            <div class="section-nav">
+                <div class="section-nav-item active" data-tab="profile">Profile</div>
+                <div class="section-nav-item" data-tab="activity">Activity Logs</div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profileTab" class="tab-content">
+                <div class="content-section">
+                    <h3>Profile Settings</h3>
+                    
+                    <div class="profile-field">
+                        <div class="field-info">
+                            <label>Username</label>
+                            <div class="field-value" id="profileUsername">Lethal-Luka</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="openModal('changeUsername')">
+                            <i class="fas fa-edit"></i> Change Username
+                        </button>
+                    </div>
+
+                    <div class="profile-field">
+                        <div class="field-info">
+                            <label>Email</label>
+                            <div class="field-value" id="profileEmail">lethal.luka@example.com</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="openModal('changeEmail')">
+                            <i class="fas fa-edit"></i> Change Email
+                        </button>
+                    </div>
+
+                    <div class="profile-field">
+                        <div class="field-info">
+                            <label>API Key</label>
+                            <div class="field-value api-key" id="apiKeyField">••••••••••••••••••••••••••••••••</div>
+                        </div>
+                        <div class="api-key-actions">
+                            <button class="btn btn-secondary" onclick="toggleApiKeyVisibility()" id="revealApiKeyBtn">
+                                <i class="fas fa-eye"></i> Reveal
+                            </button>
+                            <button class="btn btn-secondary" onclick="openModal('regenerateApiKey')">
+                                <i class="fas fa-sync"></i> Regenerate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <div class="field-info">
+                            <label>Security</label>
+                            <div class="field-description">Change your account password</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="openModal('changePassword')">
+                            <i class="fas fa-lock"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Logs Tab -->
+            <div id="activityTab" class="tab-content" style="display: none;">
+                <div class="content-section">
+                    <h3>Recent Activity</h3>
+                    <div id="auditLogsContainer">
+                        <!-- Audit logs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Modal Title</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Modal content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer">
+        <!-- Notifications will be added here -->
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{
+  "plans": {
+    "basic": {
+      "id": "basic",
+      "name": "Basic",
+      "price": 15,
+      "currency": "USD",
+      "duration": "monthly",
+      "limits": {
+        "obfuscations": 500,
+        "projects": 3,
+        "scripts": 15,
+        "users": 100
+      },
+      "features": [
+        "Basic obfuscation",
+        "3 projects",
+        "15 scripts per project",
+        "Email support",
+        "Basic analytics"
+      ],
+      "color": "#3498ff",
+      "popular": false
+    },
+    "premium": {
+      "id": "premium",
+      "name": "Premium",
+      "price": 25,
+      "currency": "USD",
+      "duration": "monthly",
+      "limits": {
+        "obfuscations": 1500,
+        "projects": 10,
+        "scripts": 50,
+        "users": 500
+      },
+      "features": [
+        "Advanced obfuscation",
+        "10 projects",
+        "50 scripts per project",
+        "Priority support",
+        "Advanced analytics",
+        "Lightning mode",
+        "Source locker"
+      ],
+      "color": "#9b59b6",
+      "popular": true
+    },
+    "pro": {
+      "id": "pro",
+      "name": "Pro",
+      "price": 40,
+      "currency": "USD",
+      "duration": "monthly",
+      "limits": {
+        "obfuscations": 5000,
+        "projects": 25,
+        "scripts": 100,
+        "users": 2000
+      },
+      "features": [
+        "Premium obfuscation",
+        "25 projects",
+        "100 scripts per project",
+        "24/7 priority support",
+        "Advanced analytics",
+        "Lightning mode",
+        "Source locker",
+        "Custom heartbeat",
+        "IP whitelist",
+        "Custom branding"
+      ],
+      "color": "#e74c3c",
+      "popular": false
+    }
+  }
+}

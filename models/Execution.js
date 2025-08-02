@@ -19,7 +19,6 @@ const executionSchema = new mongoose.Schema({
   // Execution details
   executionId: {
     type: String,
-    unique: true,
     required: true
   },
   userAgent: {

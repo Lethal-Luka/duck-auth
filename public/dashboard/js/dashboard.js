@@ -4,6 +4,7 @@ let currentProjects = [];
 let selectedProject = null;
 let currentProjectScripts = [];
 let currentUserKeys = [];
+let executionChart = null;
 
 async function loadDashboard() {
     try {
@@ -28,9 +29,138 @@ async function loadDashboard() {
             document.getElementById('monthlyKeysLimit').textContent = keys.limit;
             document.getElementById('keysProgress').style.width = keys.percentage + '%';
         }
+
+        // Load execution chart
+        await loadExecutionChart();
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
+}
+
+async function loadExecutionChart() {
+    try {
+        const chartContainer = document.querySelector('.chart-container');
+        if (!chartContainer) return;
+
+        // Show loading state
+        chartContainer.innerHTML = '<div class="chart-loading"><i class="fas fa-spinner"></i> Loading analytics...</div>';
+
+        // Get chart data from analytics API
+        const response = await API.call('/api/analytics/executions?days=10');
+        
+        if (response && response.success && response.data) {
+            // Create chart
+            chartContainer.innerHTML = '<canvas id="executionChart" width="400" height="200"></canvas>';
+            createExecutionChart(response.data);
+        } else {
+            chartContainer.innerHTML = '<div class="chart-loading">No data available</div>';
+        }
+    } catch (error) {
+        console.error('Error loading chart:', error);
+        const chartContainer = document.querySelector('.chart-container');
+        if (chartContainer) {
+            chartContainer.innerHTML = '<div class="chart-loading">Failed to load analytics</div>';
+        }
+    }
+}
+
+function createExecutionChart(data) {
+    const ctx = document.getElementById('executionChart');
+    if (!ctx) return;
+
+    // Destroy existing chart
+    if (executionChart) {
+        executionChart.destroy();
+    }
+
+    const labels = data.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const executionData = data.map(item => item.executions);
+    const successData = data.map(item => item.successful);
+    const failedData = data.map(item => item.failed);
+
+    executionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Executions',
+                    data: executionData,
+                    borderColor: '#3498ff',
+                    backgroundColor: 'rgba(52, 152, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Successful',
+                    data: successData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'Failed',
+                    data: failedData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#e3e8f0',
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(14, 19, 27, 0.9)',
+                    titleColor: '#e3e8f0',
+                    bodyColor: '#e3e8f0',
+                    borderColor: '#3498ff',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(52, 152, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a0adc0'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(52, 152, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#a0adc0'
+                    }
+                }
+            }
+        }
+    });
 }
 
 async function loadProjects() {

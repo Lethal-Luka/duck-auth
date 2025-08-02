@@ -40,6 +40,24 @@ async function dashboardRoutes(fastify, options) {
 
       const scriptsCount = await Script.countDocuments({ owner: userId });
 
+      // Get user's projects for execution stats
+      const userProjects = await Project.find({ owner: userId }).select('_id');
+      const projectIds = userProjects.map(p => p._id);
+
+      // Get execution count from analytics
+      let executionsCount = 0;
+      try {
+        const Execution = require('../models/Execution');
+        executionsCount = await Execution.countDocuments({ 
+          project: { $in: projectIds } 
+        });
+      } catch (error) {
+        console.log('Execution model not available, using script analytics');
+        const scripts = await Script.find({ owner: userId });
+        executionsCount = scripts.reduce((total, script) => total + (script.analytics.executions || 0), 0);
+      }
+
+      // Count unique users from projects
       const projects = await Project.find({
         $or: [
           { owner: userId },
@@ -52,18 +70,18 @@ async function dashboardRoutes(fastify, options) {
         totalUsers += project.collaborators.length + 1; // +1 for owner
       });
 
-      // Calculate monthly usage
+      // Get user limits from enhanced model
       const user = await User.findById(userId);
       const monthlyStats = {
         obfuscations: {
-          used: user.monthlyObfuscations.used,
-          limit: user.monthlyObfuscations.limit,
-          percentage: Math.round((user.monthlyObfuscations.used / user.monthlyObfuscations.limit) * 100)
+          used: user.limits?.obfuscations?.used || 0,
+          limit: user.limits?.obfuscations?.limit || 500,
+          percentage: Math.round(((user.limits?.obfuscations?.used || 0) / (user.limits?.obfuscations?.limit || 500)) * 100)
         },
         users: {
-          used: user.monthlyUsers.used,
-          limit: user.monthlyUsers.limit,
-          percentage: Math.round((user.monthlyUsers.used / user.monthlyUsers.limit) * 100)
+          used: user.limits?.users?.used || 0,
+          limit: user.limits?.users?.limit || 100,
+          percentage: Math.round(((user.limits?.users?.used || 0) / (user.limits?.users?.limit || 100)) * 100)
         }
       };
 
@@ -79,7 +97,7 @@ async function dashboardRoutes(fastify, options) {
           projects: projectsCount,
           scripts: scriptsCount,
           users: totalUsers,
-          executions: Math.floor(Math.random() * 10000) // Mock data
+          executions: executionsCount
         },
         monthlyStats,
         recentActivity

@@ -1,0 +1,71 @@
+{
+  "app": {
+    "name": "Duck Auth",
+    "version": "1.0.0",
+    "description": "Secure your Roblox scripts with our advanced whitelist service",
+    "tagline": "The most trusted Roblox script security platform",
+    "logo": "/assets/logo.png",
+    "favicon": "/assets/favicon.ico"
+  },
+  "features": {
+    "homepage": [
+      {
+        "icon": "shield-alt",
+        "title": "Advanced Security",
+        "description": "Military-grade encryption and obfuscation for your scripts"
+      },
+      {
+        "icon": "users",
+        "title": "User Management",
+        "description": "Complete control over who can access your scripts"
+      },
+      {
+        "icon": "chart-line",
+        "title": "Real-time Analytics",
+        "description": "Track executions, users, and performance in real-time"
+      },
+      {
+        "icon": "bolt",
+        "title": "Lightning Fast",
+        "description": "Optimized infrastructure for instant script delivery"
+      },
+      {
+        "icon": "code",
+        "title": "Source Protection",
+        "description": "Advanced source locking and anti-tampering measures"
+      },
+      {
+        "icon": "globe",
+        "title": "Global CDN",
+        "description": "Worldwide content delivery for maximum performance"
+      }
+    ]
+  },
+  "statistics": {
+    "totalUsers": 15420,
+    "totalExecutions": 2847562,
+    "totalObfuscations": 892734,
+    "threatsBlocked": 45821
+  },
+  "notifications": {
+    "confettiEnabled": true,
+    "autoHideTimer": 5000,
+    "maxNotifications": 10
+  },
+  "analytics": {
+    "retentionDays": 30,
+    "chartUpdateInterval": 60000,
+    "realtimeUpdates": true
+  },
+  "security": {
+    "rateLimiting": {
+      "enabled": true,
+      "windowMs": 900000,
+      "maxRequests": 100
+    },
+    "ipWhitelist": {
+      "enabled": true,
+      "maxEntries": 50
+    }
+  }
+}

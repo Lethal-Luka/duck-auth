@@ -30,6 +30,9 @@ fastify.register(require('./routes/projects'), { prefix: '/api/projects' });
 fastify.register(require('./routes/scripts'), { prefix: '/api/scripts' });
 fastify.register(require('./routes/users'), { prefix: '/api/users' });
 fastify.register(require('./routes/dashboard'), { prefix: '/api/dashboard' });
+fastify.register(require('./routes/config'), { prefix: '/api/config' });
+fastify.register(require('./routes/notifications'), { prefix: '/api/notifications' });
+fastify.register(require('./routes/analytics'), { prefix: '/api/analytics' });
 
 // Serve frontend
 fastify.get('/', async (request, reply) => {

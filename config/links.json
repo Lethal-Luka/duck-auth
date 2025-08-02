@@ -1,0 +1,17 @@
+{
+  "shoppy": {
+    "basic": "https://shoppy.gg/product/duck-auth-basic",
+    "premium": "https://shoppy.gg/product/duck-auth-premium",
+    "pro": "https://shoppy.gg/product/duck-auth-pro"
+  },
+  "discord": {
+    "server": "https://discord.gg/duckauth",
+    "support": "https://discord.gg/duckauth-support",
+    "reseller": "https://discord.gg/duckauth-reseller"
+  },
+  "social": {
+    "github": "https://github.com/Lethal-Luka/duck-auth",
+    "twitter": "https://twitter.com/duckauth",
+    "website": "https://duckauth.com"
+  }
+}

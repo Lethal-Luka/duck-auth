@@ -1,0 +1,24 @@
+{
+  "shoppy": {
+    "baseUrl": "https://shoppy.gg",
+    "products": {
+      "basic": "https://shoppy.gg/@duckauth/product/basic-plan",
+      "premium": "https://shoppy.gg/@duckauth/product/premium-plan", 
+      "pro": "https://shoppy.gg/@duckauth/product/pro-plan"
+    },
+    "webhook": {
+      "secret": "duck_auth_webhook_secret_2024",
+      "endpoint": "/api/webhooks/shoppy"
+    }
+  },
+  "discord": {
+    "server": "https://discord.gg/duckauth",
+    "reseller": "https://discord.gg/duckauth-reseller",
+    "support": "https://discord.gg/duckauth-support"
+  },
+  "social": {
+    "github": "https://github.com/Lethal-Luka/duck-auth",
+    "twitter": "https://twitter.com/duckauth",
+    "youtube": "https://youtube.com/@duckauth"
+  }
+}

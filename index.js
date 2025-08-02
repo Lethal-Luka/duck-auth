@@ -1,6 +1,6 @@
 const fastify = require('fastify')({ logger: true });
 const path = require('path');
-const mongoose = require('mongoose');
+const connectDB = require('./config/database');
 
 // Register plugins
 fastify.register(require('@fastify/static'), {
@@ -14,15 +14,7 @@ fastify.register(require('@fastify/cors'), {
 });
 
 // Database connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect('mongodb+srv://me:xfENsq2KGppiG7lk@duck-auth.9dbrtqf.mongodb.net/?retryWrites=true&w=majority&appName=Duck-Auth');
-    console.log('MongoDB connected successfully');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
+connectDB();
 
 // Register routes
 fastify.register(require('./routes/auth'), { prefix: '/api/auth' });
@@ -43,7 +35,6 @@ fastify.get('/dashboard', async (request, reply) => {
 // Start server
 const start = async () => {
   try {
-    await connectDB();
     await fastify.listen({ port: 3000, host: '0.0.0.0' });
     console.log('Server running on http://localhost:3000');
   } catch (err) {

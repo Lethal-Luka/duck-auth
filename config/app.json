@@ -1,0 +1,47 @@
+{
+  "app": {
+    "name": "Duck Auth",
+    "version": "1.0.0",
+    "description": "Secure your Roblox scripts with Duck Auth",
+    "port": 3000,
+    "domain": "https://duckauth.com"
+  },
+  "database": {
+    "mongodb": {
+      "uri": "mongodb://localhost:27017/duck-auth",
+      "options": {
+        "useNewUrlParser": true,
+        "useUnifiedTopology": true
+      }
+    }
+  },
+  "security": {
+    "jwtSecret": "duck-auth-secret-key-2024",
+    "bcryptRounds": 12,
+    "sessionTimeout": "7d",
+    "rateLimiting": {
+      "maxRequests": 100,
+      "windowMs": 900000
+    }
+  },
+  "features": {
+    "inviteCodes": true,
+    "notifications": true,
+    "analytics": true,
+    "confetti": true,
+    "sourceLocker": true
+  },
+  "stats": {
+    "totalExecutions": 18500000,
+    "activeUsers": 129000,
+    "keyCount": 405000,
+    "crackAttemptsBlocked": 1420000
+  },
+  "notifications": {
+    "global": {
+      "enabled": true,
+      "autoShow": true,
+      "defaultDuration": 5000
+    }
+  }
+}

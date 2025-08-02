@@ -31,22 +31,81 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Enhanced subscription system
   subscription: {
-    type: String,
-    enum: ['free', 'premium', 'enterprise'],
-    default: 'free'
+    plan: {
+      type: String,
+      enum: ['basic', 'premium', 'pro'],
+      default: 'basic'
+    },
+    startDate: {
+      type: Date,
+      default: Date.now
+    },
+    endDate: {
+      type: Date,
+      default: function() {
+        return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      }
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    // Invite code used for this subscription
+    inviteCode: {
+      type: String
+    }
   },
-  monthlyObfuscations: {
-    used: { type: Number, default: 0 },
-    limit: { type: Number, default: 100 }
+  // Usage tracking based on subscription limits
+  usage: {
+    obfuscations: {
+      used: { type: Number, default: 0 },
+      limit: { type: Number, default: 100 }
+    },
+    projects: {
+      used: { type: Number, default: 0 },
+      limit: { type: Number, default: 5 }
+    },
+    scripts: {
+      used: { type: Number, default: 0 },
+      limit: { type: Number, default: 25 }
+    },
+    users: {
+      used: { type: Number, default: 0 },
+      limit: { type: Number, default: 100 }
+    },
+    storage: {
+      used: { type: Number, default: 0 }, // in bytes
+      limit: { type: Number, default: 5 * 1024 * 1024 * 1024 } // 5GB
+    }
   },
-  monthlyUsers: {
-    used: { type: Number, default: 0 },
-    limit: { type: Number, default: 50 }
-  },
+  // Reset tracking for monthly limits
   lastReset: {
     type: Date,
     default: Date.now
+  },
+  // IP whitelist
+  ipWhitelist: [{
+    ip: String,
+    description: String,
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  // User preferences
+  preferences: {
+    notifications: {
+      email: { type: Boolean, default: true },
+      browser: { type: Boolean, default: true },
+      confetti: { type: Boolean, default: true }
+    },
+    theme: {
+      type: String,
+      enum: ['dark', 'light'],
+      default: 'dark'
+    }
   }
 }, {
   timestamps: true
@@ -60,6 +119,18 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check if subscription is active and not expired
+userSchema.methods.hasActiveSubscription = function() {
+  return this.subscription.isActive && new Date() <= this.subscription.endDate;
+};
+
+// Method to get current plan limits
+userSchema.methods.getPlanLimits = function() {
+  const plans = require('../config/plans.json');
+  const currentPlan = plans[this.subscription.plan];
+  return currentPlan ? currentPlan.limits : plans.basic.limits;
 };
 
 module.exports = mongoose.model('User', userSchema);

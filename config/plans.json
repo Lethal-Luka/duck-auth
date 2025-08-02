@@ -1,0 +1,63 @@
+{
+  "basic": {
+    "name": "Basic",
+    "price": 15,
+    "duration": "monthly",
+    "features": {
+      "obfuscations": 100,
+      "projects": 5,
+      "scripts": 25,
+      "users": 100,
+      "storage": "5GB",
+      "support": "community"
+    },
+    "limits": {
+      "obfuscationsPerMonth": 100,
+      "projectsTotal": 5,
+      "scriptsPerProject": 5,
+      "usersPerProject": 20,
+      "storageGB": 5
+    }
+  },
+  "premium": {
+    "name": "Premium",
+    "price": 25,
+    "duration": "monthly", 
+    "features": {
+      "obfuscations": 500,
+      "projects": 15,
+      "scripts": 75,
+      "users": 500,
+      "storage": "25GB",
+      "support": "email"
+    },
+    "limits": {
+      "obfuscationsPerMonth": 500,
+      "projectsTotal": 15,
+      "scriptsPerProject": 5,
+      "usersPerProject": 35,
+      "storageGB": 25
+    },
+    "popular": true
+  },
+  "pro": {
+    "name": "Pro",
+    "price": 40,
+    "duration": "monthly",
+    "features": {
+      "obfuscations": "unlimited",
+      "projects": "unlimited",
+      "scripts": "unlimited", 
+      "users": "unlimited",
+      "storage": "100GB",
+      "support": "priority"
+    },
+    "limits": {
+      "obfuscationsPerMonth": -1,
+      "projectsTotal": -1,
+      "scriptsPerProject": -1,
+      "usersPerProject": -1,
+      "storageGB": 100
+    }
+  }
+}

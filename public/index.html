@@ -529,6 +529,35 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 255, 0.1);
         }
 
+        .invite-status {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .invite-status.valid {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+            display: block;
+        }
+
+        .invite-status.invalid {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            display: block;
+        }
+
+        .invite-status.checking {
+            background: rgba(52, 152, 255, 0.1);
+            border: 1px solid var(--blue);
+            color: var(--blue);
+            display: block;
+        }
+
         .modal-footer {
             text-align: center;
             margin-top: 30px;
@@ -732,6 +761,12 @@
                     <input type="text" id="username" name="username" placeholder="Enter your username">
                 </div>
                 
+                <div class="form-group" id="inviteCodeGroup" style="display: none;">
+                    <label for="inviteCode">Invite Code (Optional)</label>
+                    <input type="text" id="inviteCode" name="inviteCode" placeholder="Enter invite code for premium plans">
+                    <div id="inviteStatus" class="invite-status"></div>
+                </div>
+                
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -769,6 +804,7 @@
             const title = document.getElementById('modalTitle');
             const subtitle = document.getElementById('modalSubtitle');
             const usernameGroup = document.getElementById('usernameGroup');
+            const inviteCodeGroup = document.getElementById('inviteCodeGroup');
             const submitText = document.getElementById('submitText');
             const switchText = document.getElementById('switchText');
 
@@ -778,12 +814,14 @@
                 title.textContent = 'Login';
                 subtitle.textContent = 'Welcome back to Duck Auth';
                 usernameGroup.style.display = 'none';
+                inviteCodeGroup.style.display = 'none';
                 submitText.textContent = 'Login';
                 switchText.innerHTML = 'Don\'t have an account? <a href="#" onclick="switchAuthMode()">Register here</a>';
             } else {
                 title.textContent = 'Register';
                 subtitle.textContent = 'Join Duck Auth today';
                 usernameGroup.style.display = 'block';
+                inviteCodeGroup.style.display = 'block';
                 submitText.textContent = 'Register';
                 switchText.innerHTML = 'Already have an account? <a href="#" onclick="switchAuthMode()">Login here</a>';
             }
@@ -964,6 +1002,84 @@
 
         // Load page data when page loads
         document.addEventListener('DOMContentLoaded', loadPageData);
+
+        // Invite code validation
+        let inviteValidationTimeout = null;
+
+        function setupInviteCodeValidation() {
+            const inviteCodeInput = document.getElementById('inviteCode');
+            if (!inviteCodeInput) return;
+
+            inviteCodeInput.addEventListener('input', (e) => {
+                const code = e.target.value.trim();
+                
+                if (inviteValidationTimeout) {
+                    clearTimeout(inviteValidationTimeout);
+                }
+
+                if (code.length === 0) {
+                    hideInviteStatus();
+                    return;
+                }
+
+                if (code.length < 8) {
+                    return; // Wait for more characters
+                }
+
+                showInviteStatus('checking', 'Validating invite code...');
+
+                inviteValidationTimeout = setTimeout(() => {
+                    validateInviteCode(code);
+                }, 500);
+            });
+        }
+
+        async function validateInviteCode(code) {
+            try {
+                const response = await fetch('/api/auth/validate-invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ inviteCode: code })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.valid) {
+                    showInviteStatus('valid', 
+                        `Valid ${result.plan.name} plan invite from ${result.inviter}. ` +
+                        `Includes: ${result.plan.features.slice(0, 2).join(', ')} and more.`
+                    );
+                } else {
+                    showInviteStatus('invalid', result.error || 'Invalid or expired invite code');
+                }
+            } catch (error) {
+                showInviteStatus('invalid', 'Unable to validate invite code');
+            }
+        }
+
+        function showInviteStatus(type, message) {
+            const statusDiv = document.getElementById('inviteStatus');
+            if (!statusDiv) return;
+
+            statusDiv.className = `invite-status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        function hideInviteStatus() {
+            const statusDiv = document.getElementById('inviteStatus');
+            if (statusDiv) {
+                statusDiv.className = 'invite-status';
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        // Setup invite validation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPageData();
+            setupInviteCodeValidation();
+        });
     </script>
 </body>
 </html>
